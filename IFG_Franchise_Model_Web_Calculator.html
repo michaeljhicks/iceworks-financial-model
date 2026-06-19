@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iceworks Franchisee Financial Model</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-2: #eef6f8;
+      --ink: #14213d;
+      --muted: #65758b;
+      --line: #d9e3ea;
+      --brand: #087d90;
+      --brand-2: #0c5163;
+      --accent: #4f8cff;
+      --good: #0f8b5f;
+      --warn: #b7791f;
+      --bad: #bd3039;
+      --shadow: 0 16px 40px rgba(20, 33, 61, 0.08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(8,125,144,0.14), transparent 34rem), var(--bg);
+      color: var(--ink);
+    }
+    header {
+      padding: 32px 28px 22px;
+      background: linear-gradient(135deg, #063645 0%, #087d90 72%);
+      color: white;
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+    .topbar { display:flex; justify-content: space-between; gap:20px; align-items:flex-start; max-width: 1420px; margin: 0 auto; }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 48px); letter-spacing: -0.04em; line-height: 0.98; }
+    .subtitle { margin-top: 10px; max-width: 760px; color: rgba(255,255,255,0.84); font-size: 16px; line-height: 1.5; }
+    .pill {
+      display:inline-flex; align-items:center; gap:8px; border-radius: 999px; padding: 8px 12px;
+      background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.92); font-weight:700; font-size:12px; white-space: nowrap;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    main { max-width: 1420px; margin: -14px auto 60px; padding: 0 24px; }
+    .grid { display:grid; grid-template-columns: 1.05fr 1.8fr; gap: 18px; align-items: start; }
+    .card {
+      background: rgba(255,255,255,0.94);
+      border: 1px solid rgba(217,227,234,0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-header { padding: 18px 20px; border-bottom: 1px solid var(--line); display:flex; justify-content:space-between; gap:16px; align-items:center; }
+    .card-header h2 { margin:0; font-size: 18px; letter-spacing:-0.02em; }
+    .card-body { padding: 18px 20px; }
+    .stack { display:flex; flex-direction: column; gap: 14px; }
+    .inputs-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    label { display:block; font-size: 12px; color: var(--muted); font-weight: 800; letter-spacing: .01em; margin: 0 0 6px; }
+    input, select {
+      width:100%; height: 42px; border-radius: 12px; border:1px solid #cfdce5; background: #fff;
+      padding: 0 12px; font-size: 14px; color: var(--ink); outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(8,125,144,0.10); }
+    input[type="checkbox"] { width: 16px; height: 16px; }
+    .full { grid-column: 1 / -1; }
+    .hint { margin-top: 6px; color: var(--muted); font-size: 12px; line-height:1.35; }
+    .button-row { display:flex; flex-wrap: wrap; gap: 10px; }
+    button {
+      border:0; border-radius: 999px; padding: 10px 14px; font-weight: 800; cursor:pointer;
+      background: #e6eef5; color: var(--ink); transition: transform .12s, opacity .12s, background .12s;
+    }
+    button:hover { transform: translateY(-1px); opacity: .95; }
+    .primary { background: var(--brand); color: white; }
+    .danger { background: rgba(189,48,57,.12); color: var(--bad); }
+    .secondary { background: rgba(8,125,144,.10); color: var(--brand-2); }
+    .kpi-grid { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+    .kpi {
+      border-radius: 16px; background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%); border:1px solid var(--line); padding: 14px;
+    }
+    .kpi .name { font-size: 12px; font-weight: 800; color: var(--muted); min-height: 32px; }
+    .kpi .value { font-size: clamp(20px, 2.5vw, 30px); font-weight: 900; letter-spacing:-0.04em; margin-top: 6px; }
+    .kpi .note { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .value.good { color: var(--good); } .value.warn { color: var(--warn); } .value.bad { color: var(--bad); }
+    .chart-wrap { height: 390px; position:relative; }
+    .small-chart { height: 290px; }
+    canvas { width:100%; height:100%; display:block; }
+    .tabs { display:flex; gap: 8px; flex-wrap: wrap; padding: 4px; background: #edf5f7; border-radius: 999px; }
+    .tab { padding: 8px 12px; border-radius: 999px; background: transparent; color: var(--brand-2); }
+    .tab.active { background: #fff; box-shadow: 0 2px 10px rgba(20,33,61,.08); }
+    .section-title { margin: 18px 0 10px; font-weight: 900; color: var(--brand-2); letter-spacing:-0.02em; }
+    .loans-table, .summary-table { width:100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 8px; text-align:right; vertical-align: middle; }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing:.04em; background: #f7fbfd; position: sticky; top: 0; z-index: 1; }
+    td:first-child, th:first-child { text-align:left; }
+    .loans-table input, .loans-table select { height: 34px; border-radius: 10px; padding: 0 8px; font-size: 12px; min-width: 82px; }
+    .loans-table input[type="checkbox"] { min-width: unset; }
+    .table-scroll { max-height: 520px; overflow:auto; border:1px solid var(--line); border-radius: 14px; }
+    .monthly-table-wrap { max-height: 520px; overflow:auto; border:1px solid var(--line); border-radius: 14px; }
+    .monthly-table { width:100%; border-collapse: collapse; font-size:12px; }
+    .monthly-table th { position: sticky; top:0; }
+    .callout {
+      padding: 14px 16px; border-radius: 16px; background: #fff8e8; border: 1px solid #f5d086; color:#6f4e0f; font-size: 13px; line-height: 1.45;
+    }
+    .callout strong { color:#4b3307; }
+    .footer-note { color: var(--muted); font-size: 12px; line-height: 1.45; margin-top: 12px; }
+    .split { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
+    .legend { display:flex; flex-wrap:wrap; gap: 10px; margin-top: 8px; }
+    .legend-item { display:inline-flex; align-items:center; gap: 6px; font-size: 12px; color: var(--muted); font-weight:700; }
+    .swatch { width: 12px; height: 3px; border-radius: 99px; background: var(--brand); }
+    details { border:1px solid var(--line); border-radius: 14px; background: #fff; overflow:hidden; }
+    summary { padding: 12px 14px; cursor:pointer; font-weight:900; color: var(--brand-2); }
+    details .inside { padding: 0 14px 14px; }
+    .mode-badge { font-size: 12px; color: var(--muted); font-weight: 800; }
+    @media (max-width: 1100px) { .grid, .split { grid-template-columns: 1fr; } .kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 650px) { main { padding: 0 12px; } header { padding: 24px 18px; } .topbar { flex-direction: column; } .inputs-grid, .kpi-grid { grid-template-columns: 1fr; } }
+    @media print { body { background:white; } header, .card { box-shadow:none; } button, .tabs { display:none; } main { margin:0; } .grid { display:block; } .card { break-inside: avoid; margin-bottom: 18px; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div>
+      <h1>Iceworks Franchisee Financial Model</h1>
+      <div class="subtitle">Beta Version</div>
+    </div>
+
+  </div>
+</header>
+<main>
+  <div class="grid">
+    <section class="card">
+      <div class="card-header">
+        <h2>Assumptions</h2>
+        <span class="mode-badge" id="activeScenarioLabel">Middle case</span>
+      </div>
+      <div class="card-body stack">
+        <div class="inputs-grid">
+          <div class="full">
+            <label for="scenario">Scenario preset</label>
+            <select id="scenario">
+              <option value="best">Best case</option>
+              <option value="middle" selected>Middle case</option>
+              <option value="worst">Worst case</option>
+            </select>
+            <div class="hint">Changing this resets the fields below to the chosen preset. You can then manually edit any input.</div>
+          </div>
+          <div>
+            <label for="modelStartDate">Model start date</label>
+            <input id="modelStartDate" type="date" value="2026-01-01" />
+          </div>
+          <div>
+            <label for="projectionMonths">Projection months</label>
+            <input id="projectionMonths" type="number" min="12" max="180" step="1" value="60" />
+          </div>
+          <div>
+            <label for="startingLiquidity">Starting liquidity ($)</label>
+            <input id="startingLiquidity" type="number" step="1000" value="100000" />
+          </div>
+          <div>
+            <label for="franchiseFee">Initial franchise fee ($)</label>
+            <input id="franchiseFee" type="number" step="100" value="29900" />
+          </div>
+          <div>
+            <label for="startupCosts">Other startup/setup costs ($)</label>
+            <input id="startupCosts" type="number" step="100" value="10000" />
+          </div>
+          <div>
+            <label for="machinesPerMonth">Machines added per month</label>
+            <input id="machinesPerMonth" type="number" min="0" step="0.25" value="2" />
+          </div>
+          <div>
+            <label for="leaseRate">Avg. monthly lease rate ($)</label>
+            <input id="leaseRate" type="number" step="5" value="240" />
+          </div>
+          <div>
+            <label for="equipmentCost">Avg. equipment cost / machine ($)</label>
+            <input id="equipmentCost" type="number" step="50" value="4467" />
+          </div>
+          <div>
+            <label for="installCost">Avg. install cost / machine ($)</label>
+            <input id="installCost" type="number" step="50" value="728" />
+          </div>
+          <div>
+            <label for="financedPct">Auto financed % of equipment+install</label>
+            <input id="financedPct" type="number" min="0" max="100" step="1" value="100" />
+          </div>
+          <div>
+            <label for="autoApr">Auto equipment debt APR (%)</label>
+            <input id="autoApr" type="number" min="0" step="0.1" value="10" />
+          </div>
+          <div>
+            <label for="autoTerm">Auto equipment loan term (months)</label>
+            <input id="autoTerm" type="number" min="1" step="1" value="60" />
+          </div>
+          <div>
+            <label for="loanMode">Loan modeling mode</label>
+            <select id="loanMode">
+              <option value="auto">Auto equipment cohorts</option>
+              <option value="custom">Custom loans only</option>
+              <option value="both" selected>Auto + custom loans</option>
+            </select>
+          </div>
+          <div>
+            <label for="royaltyRate">Royalty rate (% of sales)</label>
+            <input id="royaltyRate" type="number" min="0" step="0.1" value="9" />
+          </div>
+          <div>
+            <label for="maintenancePct">Maintenance/repair reserve (% of sales)</label>
+            <input id="maintenancePct" type="number" min="0" step="0.5" value="20" />
+          </div>
+          <div>
+            <label for="overhead">Fixed operating overhead ($/month)</label>
+            <input id="overhead" type="number" step="100" value="3500" />
+          </div>
+          <div>
+            <label for="ownerDraw">Owner draw ($/month)</label>
+            <input id="ownerDraw" type="number" step="100" value="0" />
+          </div>
+          <div>
+            <label for="taxRate">Estimated tax rate (%)</label>
+            <input id="taxRate" type="number" min="0" step="1" value="0" />
+          </div>
+          <div>
+            <label for="depreciationLife">Depreciation life (months)</label>
+            <input id="depreciationLife" type="number" min="1" step="1" value="60" />
+          </div>
+          <div class="full">
+            <label for="reserveTarget">Minimum cash reserve target ($)</label>
+            <input id="reserveTarget" type="number" step="1000" value="40000" />
+          </div>
+        </div>
+        <div class="button-row">
+          <button class="primary" id="recalcBtn">Recalculate</button>
+          <button class="secondary" id="saveBtn">Save inputs in browser</button>
+          <button class="secondary" id="loadBtn">Load saved inputs</button>
+          <button class="secondary" id="csvBtn">Export monthly CSV</button>
+          <button class="danger" id="resetBtn">Reset middle case</button>
+        </div>
+        <div class="callout"><strong>Important:</strong> Custom loan proceeds only increase cash if “Include proceeds in cash?” is set to Yes on the Loans table. Automatic equipment financing reduces cash needed for equipment, but it does not create extra cash runway.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Dashboard</h2>
+        <span class="mode-badge" id="warningBadge">Calculating…</span>
+      </div>
+      <div class="card-body stack">
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="chart-wrap">
+          <canvas id="rampChart"></canvas>
+        </div>
+        <div class="legend" id="rampLegend"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:18px;">
+    <div class="card-header">
+      <h2>Custom loans</h2>
+      <span class="mode-badge">Enter up to 10 loans</span>
+    </div>
+    <div class="card-body stack">
+      <div class="table-scroll">
+        <table class="loans-table" id="loanTable">
+          <thead>
+            <tr>
+              <th>On</th><th>Loan name</th><th>Start date</th><th>Principal ($)</th><th>APR (%)</th><th>Term</th><th>Include proceeds in cash?</th><th>Monthly payment</th><th>End balance</th>
+            </tr>
+          </thead>
+          <tbody id="loanRows"></tbody>
+        </table>
+      </div>
+      <div class="footer-note">Use custom loans for real bank loans, HELOCs, cash-secured loans, or other specific debt facilities. If the loan proceeds fund equipment already modeled by the automatic equipment cohorts, be careful not to double-count both auto financing and custom loan proceeds.</div>
+    </div>
+  </section>
+
+  <div class="split" style="margin-top:18px;">
+    <section class="card">
+      <div class="card-header"><h2>Debt and DSCR</h2><span class="mode-badge">Debt service coverage</span></div>
+      <div class="card-body stack">
+        <div class="chart-wrap small-chart"><canvas id="debtChart"></canvas></div>
+        <div class="legend" id="debtLegend"></div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-header"><h2>Annual summary</h2><span class="mode-badge">End-of-year view</span></div>
+      <div class="card-body">
+        <div class="table-scroll"><table class="summary-table" id="annualTable"></table></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:18px;">
+    <div class="card-header"><h2>Monthly model</h2><span class="mode-badge">Detailed calculated output</span></div>
+    <div class="card-body stack">
+      <div class="monthly-table-wrap"><table class="monthly-table" id="monthlyTable"></table></div>
+      <div class="footer-note">Tax is intentionally simplified and can be set to zero. For actual tax planning, depreciation, Section 179, bonus depreciation, and owner compensation should be reviewed with a CPA.</div>
+    </div>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const num = (id) => parseFloat($(id).value || 0);
+const fmtMoney = (v, digits=0) => {
+  if (!isFinite(v)) return "—";
+  const abs = Math.abs(v);
+  const s = abs.toLocaleString(undefined, {minimumFractionDigits: digits, maximumFractionDigits: digits});
+  return v < 0 ? `($${s})` : `$${s}`;
+};
+const fmtNum = (v, digits=0) => isFinite(v) ? v.toLocaleString(undefined, {minimumFractionDigits: digits, maximumFractionDigits: digits}) : "—";
+const fmtPct = (v, digits=1) => isFinite(v) ? `${v.toFixed(digits)}%` : "—";
+const fmtX = (v) => !isFinite(v) ? "—" : `${v.toFixed(1)}x`;
+const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+const colors = ["#087d90", "#4f8cff", "#bd3039", "#8f5bd5", "#0f8b5f", "#b7791f", "#14213d"];
+const presets = {
+  best: {projectionMonths:60, startingLiquidity:100000, franchiseFee:29500, startupCosts:5000, machinesPerMonth:2, leaseRate:275, equipmentCost:4200, installCost:600, financedPct:90, autoApr:8, autoTerm:60, loanMode:"auto", royaltyRate:9, maintenancePct:15, overhead:2500, ownerDraw:0, taxRate:0, depreciationLife:60, reserveTarget:30000},
+  middle: {projectionMonths:60, startingLiquidity:100000, franchiseFee:29500, startupCosts:10000, machinesPerMonth:2, leaseRate:240, equipmentCost:4467, installCost:728, financedPct:100, autoApr:10, autoTerm:60, loanMode:"auto", royaltyRate:9, maintenancePct:20, overhead:3500, ownerDraw:0, taxRate:0, depreciationLife:60, reserveTarget:40000},
+  worst: {projectionMonths:60, startingLiquidity:100000, franchiseFee:29500, startupCosts:15000, machinesPerMonth:2, leaseRate:220, equipmentCost:5200, installCost:1050, financedPct:100, autoApr:14, autoTerm:48, loanMode:"auto", royaltyRate:9, maintenancePct:30, overhead:4500, ownerDraw:0, taxRate:0, depreciationLife:60, reserveTarget:50000}
+};
+const inputIds = ["modelStartDate","projectionMonths","startingLiquidity","franchiseFee","startupCosts","machinesPerMonth","leaseRate","equipmentCost","installCost","financedPct","autoApr","autoTerm","loanMode","royaltyRate","maintenancePct","overhead","ownerDraw","taxRate","depreciationLife","reserveTarget"];
+function applyPreset(name){
+  const p = presets[name]; if (!p) return;
+  Object.entries(p).forEach(([k,v]) => { if ($(k)) $(k).value = v; });
+  $("activeScenarioLabel").textContent = name === "best" ? "Best case" : name === "worst" ? "Worst case" : "Middle case";
+  calculate();
+}
+function addMonths(date, months){ const d = new Date(date); d.setMonth(d.getMonth()+months); return d; }
+function monthDiff(start, current){ return (current.getFullYear()-start.getFullYear())*12 + (current.getMonth()-start.getMonth()); }
+function monthLabel(startDate, monthIndex){ const d = addMonths(startDate, monthIndex-1); return d.toLocaleDateString(undefined, {month:"short", year:"2-digit"}); }
+function pmt(principal, apr, term){
+  principal = +principal; term = +term; apr = +apr;
+  if (principal <= 0 || term <= 0) return 0;
+  const r = apr/100/12;
+  if (Math.abs(r) < 1e-10) return principal/term;
+  return principal*r/(1-Math.pow(1+r,-term));
+}
+function emptyLoan(i){
+  return {enabled:false, name:`Loan ${i}`, startDate:"2026-01-01", principal:0, apr:0, term:60, includeProceeds:false};
+}
+function initLoanRows(){
+  const tbody = $("loanRows"); tbody.innerHTML = "";
+  for (let i=1;i<=10;i++){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td><input type="checkbox" id="loan${i}_enabled"></td>
+      <td><input id="loan${i}_name" value="Loan ${i}"></td>
+      <td><input id="loan${i}_start" type="date" value="2026-01-01"></td>
+      <td><input id="loan${i}_principal" type="number" step="1000" value="0"></td>
+      <td><input id="loan${i}_apr" type="number" step="0.1" value="0"></td>
+      <td><input id="loan${i}_term" type="number" step="1" value="60"></td>
+      <td><select id="loan${i}_proceeds"><option value="no" selected>No</option><option value="yes">Yes</option></select></td>
+      <td id="loan${i}_payment">—</td>
+      <td id="loan${i}_endbal">—</td>`;
+    tbody.appendChild(tr);
+  }
+  document.querySelectorAll("input,select").forEach(el => el.addEventListener("input", calculate));
+}
+function readInputs(){
+  return {
+    modelStartDate: $("modelStartDate").value || "2026-01-01",
+    projectionMonths: clamp(Math.round(num("projectionMonths")), 1, 240),
+    startingLiquidity: num("startingLiquidity"),
+    franchiseFee: num("franchiseFee"),
+    startupCosts: num("startupCosts"),
+    machinesPerMonth: num("machinesPerMonth"),
+    leaseRate: num("leaseRate"),
+    equipmentCost: num("equipmentCost"),
+    installCost: num("installCost"),
+    financedPct: num("financedPct")/100,
+    autoApr: num("autoApr"),
+    autoTerm: Math.round(num("autoTerm")),
+    loanMode: $("loanMode").value,
+    royaltyRate: num("royaltyRate")/100,
+    maintenancePct: num("maintenancePct")/100,
+    overhead: num("overhead"),
+    ownerDraw: num("ownerDraw"),
+    taxRate: num("taxRate")/100,
+    depreciationLife: Math.max(1, Math.round(num("depreciationLife"))),
+    reserveTarget: num("reserveTarget")
+  };
+}
+function readLoans(){
+  const loans=[];
+  for(let i=1;i<=10;i++){
+    loans.push({
+      enabled: $(`loan${i}_enabled`).checked,
+      name: $(`loan${i}_name`).value || `Loan ${i}`,
+      startDate: $(`loan${i}_start`).value || "2026-01-01",
+      principal: parseFloat($(`loan${i}_principal`).value || 0),
+      apr: parseFloat($(`loan${i}_apr`).value || 0),
+      term: Math.round(parseFloat($(`loan${i}_term`).value || 0)),
+      includeProceeds: $(`loan${i}_proceeds`).value === "yes",
+    });
+  }
+  return loans;
+}
+function amortizeMonthly(loans, months, modelStartDate){
+  const result = Array.from({length: months},()=>({payment:0, interest:0, principal:0, endDebt:0, proceeds:0}));
+  const start = new Date(modelStartDate + "T00:00:00");
+  const endBalances = [];
+  loans.forEach((loan, idx)=>{
+    if(!loan.enabled || loan.principal<=0 || loan.term<=0) { endBalances[idx]=0; return; }
+    const sDate = new Date(loan.startDate + "T00:00:00");
+    const startMonth = monthDiff(start, sDate) + 1;
+    const monthlyRate = loan.apr/100/12;
+    const payment = pmt(loan.principal, loan.apr, loan.term);
+    let balance = 0;
+
+    // If the loan starts before the model start date, roll the balance forward
+    // so month 1 begins with the estimated remaining loan balance.
+    if(startMonth <= 1){
+      balance = loan.principal;
+      const preModelPayments = Math.min(1 - startMonth, loan.term);
+      for(let k=0; k<preModelPayments; k++){
+        const interest = balance * monthlyRate;
+        let principal = payment - interest;
+        if(principal > balance) principal = balance;
+        balance = Math.max(0, balance - principal);
+      }
+    }
+
+    for(let m=1; m<=months; m++){
+      if(m === startMonth){
+        balance += loan.principal;
+        result[m-1].proceeds += loan.includeProceeds ? loan.principal : 0;
+      }
+      if(m >= startMonth && m < startMonth + loan.term && balance > 0.005){
+        const interest = balance * monthlyRate;
+        let principal = payment - interest;
+        if(principal > balance) principal = balance;
+        const actualPayment = principal + interest;
+        balance = Math.max(0, balance - principal);
+        result[m-1].payment += actualPayment;
+        result[m-1].interest += interest;
+        result[m-1].principal += principal;
+      }
+      result[m-1].endDebt += balance;
+    }
+    endBalances[idx] = balance;
+  });
+  return {monthly: result, endBalances};
+}
+function calculate(){
+  const inp = readInputs();
+  const months = inp.projectionMonths;
+  const modelStartDate = inp.modelStartDate;
+  const customLoans = readLoans();
+  const custom = amortizeMonthly(customLoans, months, modelStartDate);
+  const autoLoans = [];
+  if(inp.loanMode === "auto" || inp.loanMode === "both"){
+    for(let m=1; m<=months; m++){
+      const newMachines = inp.machinesPerMonth;
+      const newCost = newMachines * (inp.equipmentCost + inp.installCost);
+      const financed = newCost * inp.financedPct;
+      if(financed > 0){
+        autoLoans.push({enabled:true, name:`Equipment cohort M${m}`, startDate: dateForMonth(modelStartDate, m), principal: financed, apr: inp.autoApr, term: inp.autoTerm, includeProceeds:false});
+      }
+    }
+  }
+  const auto = amortizeMonthly(autoLoans, months, modelStartDate);
+  const includeCustom = inp.loanMode === "custom" || inp.loanMode === "both";
+  const rows=[];
+  let cumulativeNetCash = 0;
+  let cumulativeGross = 0;
+  let cumulativeLoanProceeds = 0;
+  for(let m=1;m<=months;m++){
+    const newMachines = inp.machinesPerMonth;
+    const activeMachines = newMachines * m;
+    const grossRevenue = activeMachines * inp.leaseRate;
+    const royalty = grossRevenue * inp.royaltyRate;
+    const maintenance = grossRevenue * inp.maintenancePct;
+    const overhead = inp.overhead;
+    const ownerDraw = inp.ownerDraw;
+    const newEquipmentCost = newMachines * (inp.equipmentCost + inp.installCost);
+    const autoCashDown = (inp.loanMode === "auto" || inp.loanMode === "both") ? newEquipmentCost * (1 - inp.financedPct) : 0;
+    const autoM = auto.monthly[m-1] || {payment:0, interest:0, principal:0, endDebt:0};
+    const customM = includeCustom ? (custom.monthly[m-1] || {payment:0, interest:0, principal:0, endDebt:0, proceeds:0}) : {payment:0, interest:0, principal:0, endDebt:0, proceeds:0};
+    const debtService = autoM.payment + customM.payment;
+    const interest = autoM.interest + customM.interest;
+    const principal = autoM.principal + customM.principal;
+    const endingDebt = autoM.endDebt + customM.endDebt;
+    let depreciation = 0;
+    for(let cohort=1; cohort<=m; cohort++){
+      if(m < cohort + inp.depreciationLife) depreciation += (inp.machinesPerMonth * (inp.equipmentCost + inp.installCost)) / inp.depreciationLife;
+    }
+    const bookProfitBeforeTax = grossRevenue - royalty - maintenance - overhead - interest - depreciation;
+    const tax = Math.max(0, bookProfitBeforeTax) * inp.taxRate;
+    const contributionBeforeDebt = grossRevenue - royalty - maintenance - overhead;
+    const dscr = debtService > 0 ? contributionBeforeDebt / debtService : null;
+    const netCashFlow = grossRevenue - royalty - maintenance - overhead - ownerDraw - tax - debtService - autoCashDown;
+    cumulativeNetCash += netCashFlow;
+    cumulativeGross += grossRevenue;
+    cumulativeLoanProceeds += customM.proceeds;
+    const cashAvailable = inp.startingLiquidity - inp.franchiseFee - inp.startupCosts + cumulativeNetCash + cumulativeLoanProceeds;
+    rows.push({month:m, label: monthLabel(modelStartDate, m), newMachines, activeMachines, grossRevenue, royalty, maintenance, overhead, ownerDraw, newEquipmentCost, autoCashDown, debtService, interest, principal, endingDebt, depreciation, bookProfitBeforeTax, tax, netCashFlow, cumulativeNetCash, cashAvailable, contributionBeforeDebt, dscr, customProceeds: customM.proceeds, cumulativeGross});
+  }
+  updateLoanRows(custom, includeCustom);
+  renderKpis(rows, inp);
+  renderCharts(rows);
+  renderAnnualTable(rows);
+  renderMonthlyTable(rows);
+  window.__modelRows = rows;
+}
+function dateForMonth(modelStartDate, monthIndex){
+  const d = addMonths(new Date(modelStartDate + "T00:00:00"), monthIndex-1);
+  return d.toISOString().slice(0,10);
+}
+function updateLoanRows(custom, includeCustom){
+  const loans = readLoans();
+  loans.forEach((loan,i)=>{
+    const pay = loan.enabled ? pmt(loan.principal, loan.apr, loan.term) : 0;
+    $(`loan${i+1}_payment`).textContent = loan.enabled ? fmtMoney(pay,0) : "—";
+    $(`loan${i+1}_endbal`).textContent = loan.enabled && includeCustom ? fmtMoney(custom.endBalances[i] || 0,0) : "—";
+  });
+}
+function renderKpis(rows, inp){
+  const last = rows[rows.length-1];
+  const items = [
+    {name:"Active machines", value:fmtNum(last.activeMachines,0), note:"Machines placed by end of projection"},
+    {name:"Gross monthly lease revenue", value:fmtMoney(last.grossRevenue,0), note:"Top-line recurring revenue before expenses"},
+    {name:"Monthly debt service", value:fmtMoney(last.debtService,0), note:"Estimated loan payment burden"},
+    {name:"Monthly net cash flow", value:fmtMoney(last.netCashFlow,0), note:"After modeled costs and debt", cls:last.netCashFlow>=0?"good":"bad"},
+    {name:"Cumulative net cash flow", value:fmtMoney(last.cumulativeNetCash,0), note:"Total ramp surplus/shortfall", cls:last.cumulativeNetCash>=0?"good":"bad"},
+    {name:"Cash available", value:fmtMoney(last.cashAvailable,0), note:"Starting liquidity after startup + net cash", cls:last.cashAvailable>=inp.reserveTarget?"good":last.cashAvailable>=0?"warn":"bad"},
+    {name:"Ending equipment/loan debt", value:fmtMoney(last.endingDebt,0), note:"Estimated outstanding debt"},
+    {name:"Debt service coverage", value:last.dscr===null?"—":fmtX(last.dscr), note:"Contribution before debt ÷ debt service", cls:last.dscr===null?"":last.dscr>=1.25?"good":last.dscr>=1?"warn":"bad"}
+  ];
+  $("kpiGrid").innerHTML = items.map(i=>`<div class="kpi"><div class="name">${i.name}</div><div class="value ${i.cls||""}">${i.value}</div><div class="note">${i.note}</div></div>`).join("");
+  const minCash = Math.min(...rows.map(r=>r.cashAvailable));
+  const badge = $("warningBadge");
+  if(minCash < 0){ badge.textContent = "Cash goes negative"; badge.style.color = "var(--bad)"; }
+  else if(minCash < inp.reserveTarget){ badge.textContent = "Below reserve target"; badge.style.color = "var(--warn)"; }
+  else { badge.textContent = "Cash stays above reserve"; badge.style.color = "var(--good)"; }
+}
+function renderCharts(rows){
+  drawLineChart($("rampChart"), rows, [
+    {key:"grossRevenue", name:"Gross revenue", color:colors[0]},
+    {key:"debtService", name:"Debt service", color:colors[1]},
+    {key:"netCashFlow", name:"Net cash flow", color:colors[2]},
+    {key:"cashAvailable", name:"Cash available", color:colors[4]}
+  ], {money:true});
+  renderLegend("rampLegend", [{name:"Gross revenue", color:colors[0]}, {name:"Debt service", color:colors[1]}, {name:"Net cash flow", color:colors[2]}, {name:"Cash available", color:colors[4]}]);
+  drawLineChart($("debtChart"), rows, [
+    {key:"endingDebt", name:"Ending debt", color:colors[3]},
+    {key:"dscrScaled", name:"DSCR x $100k", color:colors[5], transform:(r)=>r.dscr===null?null:r.dscr*100000}
+  ], {money:true});
+  renderLegend("debtLegend", [{name:"Ending debt", color:colors[3]}, {name:"DSCR shown as x $100k for chart scale", color:colors[5]}]);
+}
+function renderLegend(id, items){ $(id).innerHTML = items.map(i=>`<span class="legend-item"><span class="swatch" style="background:${i.color}"></span>${i.name}</span>`).join(""); }
+function drawLineChart(canvas, rows, series, opts={}){
+  const ctx = canvas.getContext("2d");
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * ratio; canvas.height = rect.height * ratio; ctx.setTransform(ratio,0,0,ratio,0,0);
+  const w = rect.width, h = rect.height;
+  ctx.clearRect(0,0,w,h);
+  const pad = {l:64,r:24,t:22,b:42};
+  const values = [];
+  series.forEach(s=>rows.forEach(r=>{ let v = s.transform ? s.transform(r) : r[s.key]; if(v!==null && isFinite(v)) values.push(v); }));
+  let min = Math.min(0,...values), max = Math.max(0,...values);
+  if(max===min){ max += 1; min -= 1; }
+  const range = max-min; max += range*0.08; min -= range*0.08;
+  const x = (i)=> pad.l + (i/(rows.length-1 || 1))*(w-pad.l-pad.r);
+  const y = (v)=> pad.t + (max-v)/(max-min)*(h-pad.t-pad.b);
+  ctx.strokeStyle = "#dce7ee"; ctx.lineWidth = 1;
+  ctx.fillStyle = "#65758b"; ctx.font = "12px system-ui";
+  for(let i=0;i<=4;i++){
+    const yy = pad.t + i*(h-pad.t-pad.b)/4;
+    ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(w-pad.r, yy); ctx.stroke();
+    const val = max - i*(max-min)/4;
+    ctx.fillText(opts.money ? shortMoney(val) : fmtNum(val,0), 8, yy+4);
+  }
+  const ticks = Math.min(6, rows.length);
+  for(let i=0;i<ticks;i++){
+    const idx = Math.round(i*(rows.length-1)/(ticks-1 || 1));
+    ctx.fillText(rows[idx].label, x(idx)-18, h-16);
+  }
+  series.forEach(s=>{
+    ctx.strokeStyle = s.color; ctx.lineWidth = 3; ctx.beginPath(); let started = false;
+    rows.forEach((r,i)=>{ let v = s.transform ? s.transform(r) : r[s.key]; if(v===null || !isFinite(v)) return; const xx=x(i), yy=y(v); if(!started){ctx.moveTo(xx,yy); started=true;} else ctx.lineTo(xx,yy); });
+    ctx.stroke();
+    const last = [...rows].reverse().find(r=>{let v=s.transform?s.transform(r):r[s.key]; return v!==null && isFinite(v);});
+    if(last){ const idx = rows.indexOf(last); const v=s.transform?s.transform(last):last[s.key]; ctx.fillStyle=s.color; ctx.beginPath(); ctx.arc(x(idx), y(v), 4, 0, Math.PI*2); ctx.fill(); }
+  });
+}
+function shortMoney(v){
+  const sign = v<0?"-":""; const a=Math.abs(v);
+  if(a>=1e6) return `${sign}$${(a/1e6).toFixed(1)}M`;
+  if(a>=1e3) return `${sign}$${(a/1e3).toFixed(0)}k`;
+  return `${sign}$${a.toFixed(0)}`;
+}
+function renderAnnualTable(rows){
+  const years = [];
+  for(let i=11; i<rows.length; i+=12) years.push(rows[i]);
+  if(rows.length % 12 !==0) years.push(rows[rows.length-1]);
+  let html = `<thead><tr><th>Period</th><th>Machines</th><th>Gross revenue/mo</th><th>Debt/mo</th><th>Net cash/mo</th><th>Cash available</th><th>Ending debt</th><th>DSCR</th></tr></thead><tbody>`;
+  years.forEach(r=>{ html += `<tr><td>${r.label}</td><td>${fmtNum(r.activeMachines)}</td><td>${fmtMoney(r.grossRevenue)}</td><td>${fmtMoney(r.debtService)}</td><td>${fmtMoney(r.netCashFlow)}</td><td>${fmtMoney(r.cashAvailable)}</td><td>${fmtMoney(r.endingDebt)}</td><td>${r.dscr===null?"—":fmtX(r.dscr)}</td></tr>`; });
+  html += `</tbody>`; $("annualTable").innerHTML = html;
+}
+function renderMonthlyTable(rows){
+  const headers = ["Mo","Date","Machines","Revenue","Royalty","Maint.","Overhead","Debt svc","Interest","Principal","End debt","Net cash","Cash avail","DSCR"];
+  let html = `<thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`;
+  rows.forEach(r=>{
+    html += `<tr><td>${r.month}</td><td>${r.label}</td><td>${fmtNum(r.activeMachines)}</td><td>${fmtMoney(r.grossRevenue)}</td><td>${fmtMoney(r.royalty)}</td><td>${fmtMoney(r.maintenance)}</td><td>${fmtMoney(r.overhead)}</td><td>${fmtMoney(r.debtService)}</td><td>${fmtMoney(r.interest)}</td><td>${fmtMoney(r.principal)}</td><td>${fmtMoney(r.endingDebt)}</td><td>${fmtMoney(r.netCashFlow)}</td><td>${fmtMoney(r.cashAvailable)}</td><td>${r.dscr===null?"—":fmtX(r.dscr)}</td></tr>`;
+  });
+  html += `</tbody>`; $("monthlyTable").innerHTML = html;
+}
+function exportCsv(){
+  const rows = window.__modelRows || [];
+  const cols = ["month","label","newMachines","activeMachines","grossRevenue","royalty","maintenance","overhead","ownerDraw","newEquipmentCost","autoCashDown","debtService","interest","principal","endingDebt","depreciation","bookProfitBeforeTax","tax","netCashFlow","cumulativeNetCash","cashAvailable","dscr"];
+  const csv = [cols.join(",")].concat(rows.map(r=>cols.map(c=>JSON.stringify(r[c] ?? "")).join(","))).join("\n");
+  const blob = new Blob([csv], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = "ifg_franchisee_model_monthly_output.csv"; a.click(); URL.revokeObjectURL(url);
+}
+function saveState(){
+  const data = {inputs:{}, loans:[]};
+  inputIds.forEach(id=>data.inputs[id]=$(id).value);
+  for(let i=1;i<=10;i++) data.loans.push({enabled:$(`loan${i}_enabled`).checked, name:$(`loan${i}_name`).value, start:$(`loan${i}_start`).value, principal:$(`loan${i}_principal`).value, apr:$(`loan${i}_apr`).value, term:$(`loan${i}_term`).value, proceeds:$(`loan${i}_proceeds`).value});
+  localStorage.setItem("ifgModelState", JSON.stringify(data));
+  alert("Saved in this browser.");
+}
+function loadState(){
+  const raw = localStorage.getItem("ifgModelState"); if(!raw){ alert("No saved inputs found in this browser."); return; }
+  const data=JSON.parse(raw);
+  Object.entries(data.inputs||{}).forEach(([id,v])=>{ if($(id)) $(id).value=v; });
+  (data.loans||[]).forEach((l,i)=>{ const n=i+1; if(!$(`loan${n}_enabled`)) return; $(`loan${n}_enabled`).checked=l.enabled; $(`loan${n}_name`).value=l.name; $(`loan${n}_start`).value=l.start; $(`loan${n}_principal`).value=l.principal; $(`loan${n}_apr`).value=l.apr; $(`loan${n}_term`).value=l.term; $(`loan${n}_proceeds`).value=l.proceeds; });
+  calculate();
+}
+window.addEventListener("resize", ()=>calculate());
+$("scenario").addEventListener("change", e=>applyPreset(e.target.value));
+$("recalcBtn").addEventListener("click", calculate);
+$("saveBtn").addEventListener("click", saveState);
+$("loadBtn").addEventListener("click", loadState);
+$("csvBtn").addEventListener("click", exportCsv);
+$("resetBtn").addEventListener("click", ()=>{ $("scenario").value="middle"; applyPreset("middle"); });
+initLoanRows();
+applyPreset("middle");
+</script>
+</body>
+</html>
